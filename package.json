@@ -1,0 +1,35 @@
+{
+  "name": "@the-software-compagny/dockilot",
+  "version": "0.0.1",
+  "description": "A simple and lightweight Docker pilot",
+  "repository": "https://github.com/The-Software-Compagny/dockilot.git",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "author": "Tacx <12997062+tacxou@users.noreply.github.com>",
+  "contributors": [
+    {
+      "name": " tacxou",
+      "email": "12997062+tacxou@users.noreply.github.com",
+      "url": "https://github.com/tacxou"
+    },
+    {
+      "name": "Contributors",
+      "url": "https://github.com/The-Software-Compagny/nestjs_module_restools/graphs/contributors"
+    }
+  ],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "start:dev": "turbo run start:dev",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8",
+    "turbo": "latest"
+  },
+  "packageManager": "yarn@1.22.19"
+}
