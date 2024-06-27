@@ -16,6 +16,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   constructor(private readonly service: SocketService) { }
 
   public afterInit(server: Server) {
+    console.log('SocketGateway afterInit')
     this.service.socket = server
   }
 
