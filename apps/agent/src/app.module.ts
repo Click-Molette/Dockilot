@@ -3,8 +3,13 @@ import { Module } from '@nestjs/common'
 import { AppService } from './app.service'
 import { ConfigModule } from '@nestjs/config'
 import config from './config'
-import { DockerodeCoreModule } from './dockerode/dockerode.core-module'
 import { readFileSync } from 'node:fs'
+import { DockerodeModule } from '@the-software-compagny/nestjs_module_dockerode'
+import { AppController } from './app.controller'
+import { DockerModule } from './docker/docker.module'
+import { AllExceptionsFilter } from './_common/_filters/all-exceptions.filter'
+import { APP_FILTER } from '@nestjs/core'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
   imports: [
@@ -12,7 +17,7 @@ import { readFileSync } from 'node:fs'
       isGlobal: true,
       load: [config],
     }),
-    DockerodeCoreModule.forRoot({
+    DockerodeModule.forRoot({
       config: {
         protocol: 'ssh',
         host: '192.168.1.34',
@@ -29,8 +34,17 @@ import { readFileSync } from 'node:fs'
         },
       },
     }),
+    ScheduleModule.forRoot(),
+    DockerModule,
   ],
-  providers: [AppService],
+  controllers: [AppController],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    }
+  ],
 })
 export class AppModule {
 }
