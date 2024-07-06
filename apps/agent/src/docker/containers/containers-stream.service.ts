@@ -15,6 +15,11 @@ export class ContainersStreamService implements OnModuleInit {
     stream: NodeJS.ReadableStream,
   }>()
 
+  private execStreamMap = new Map<string, {
+    expireIn: number,
+    stream: NodeJS.ReadWriteStream,
+  }>()
+
   public constructor(@InjectDockerode() private readonly dockerode: Dockerode) {
   }
 
@@ -32,6 +37,16 @@ export class ContainersStreamService implements OnModuleInit {
         this.statsStreamMap.delete(id)
       }
     }
+
+    // for (const [id, execStream] of this.execStreamMap.entries()) {
+    //   if (execStream.expireIn < Date.now()) {
+    //     console.log('Closing stream', id)
+    //     if (typeof (execStream.stream as any).destroy === 'function') {
+    //       (execStream.stream as any).destroy()
+    //     }
+    //     this.execStreamMap.delete(id)
+    //   }
+    // }
   }
 
   public async statsStream(id: string): Promise<NodeJS.ReadableStream> {
@@ -61,5 +76,54 @@ export class ContainersStreamService implements OnModuleInit {
     }
 
     this.statsStreamMap.set(id, { ...streamMap, expireIn: Date.now() + STEAM_ALIVE_TIMEOUT })
+  }
+
+  public async execStream(id: string): Promise<NodeJS.ReadWriteStream> {
+    this.logger.debug(['execStream', JSON.stringify(Object.values(arguments))].join(' '))
+
+    if (this.execStreamMap.has(id)) {
+      this.logger.debug('Stream already exists')
+
+      return this.execStreamMap.get(id).stream
+    }
+
+    const container = this.dockerode.getContainer(id)
+    const exec = await container.exec({
+      Cmd: ['bash'],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+    })
+    const stream = await exec.start({ hijack: true, stdin: true })
+    stream.pipe(process.stdout)
+    stream.write('ls\n')
+
+    this.execStreamMap.set(id, { expireIn: Date.now() + STEAM_ALIVE_TIMEOUT, stream })
+
+    return stream
+  }
+
+  public async execStreamAlive(id: string): Promise<void> {
+    this.logger.debug(['execStreamAlive', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const streamMap = this.execStreamMap.get(id)
+
+    if (!streamMap) {
+      throw new RpcException(`execStreamAlive - Stream <${id}> not found`)
+    }
+
+    this.execStreamMap.set(id, { ...streamMap, expireIn: Date.now() + STEAM_ALIVE_TIMEOUT })
+  }
+
+  public async execStreamCmd(id: string, cmd: string): Promise<void> {
+    this.logger.debug(['execStreamCmd', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const streamMap = this.execStreamMap.get(id)
+
+    if (!streamMap) {
+      throw new RpcException(`execStreamCmd - Stream <${id}> not found`)
+    }
+
+    console.log(streamMap.stream.write(cmd))
   }
 }

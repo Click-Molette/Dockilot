@@ -29,4 +29,21 @@ export class ContainersStreamService implements OnModuleInit {
   public statsStreamAlive(id: string): Observable<any> {
     return this.client.emit<any>('docker.containers.stats-stream-alive', { id })
   }
+
+  public execStream(id: string): Observable<NodeJS.ReadWriteStream> {
+    const execStream$ = this.client.send<any>('docker.containers.exec-stream', { id })
+
+    return execStream$.pipe(
+      // timeout(10_000),
+      tap((chunk) => this.logger.verbose('Received chunk:', chunk.toString())),
+    )
+  }
+
+  public execStreamAlive(id: string): Observable<any> {
+    return this.client.emit<any>('docker.containers.exec-stream-alive', { id })
+  }
+
+  public execStreamCmd(id: string, cmd: string): Observable<any> {
+    return this.client.emit<any>('docker.containers.exec-stream-cmd', { id, cmd })
+  }
 }

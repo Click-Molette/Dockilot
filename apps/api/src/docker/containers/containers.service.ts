@@ -3,12 +3,16 @@ import { ClientProxy } from '@nestjs/microservices'
 import { ContainerUpdateOptions } from '@the-software-compagny/dockilot_shared-types'
 import { ContainerCreateOptions, ContainerInfo, ContainerInspectInfo, ContainerInspectOptions, ContainerListOptions, ContainerRemoveOptions, ContainerStartOptions, ContainerStopOptions, PruneContainersInfo } from 'dockerode'
 import { Observable, Subject, finalize, lastValueFrom, map, takeUntil, tap, timeout } from 'rxjs'
+import { SocketService } from '~/socket/socket.service'
 
 @Injectable()
 export class ContainersService implements OnModuleInit {
   private readonly logger = new Logger(ContainersService.name)
 
-  public constructor(@Inject('docker') private readonly client: ClientProxy) {
+  public constructor(@Inject('docker') private readonly client: ClientProxy, private readonly socket: SocketService) {
+    // this.socket.socket.on('connection', (socket) => {
+    //   console.log('socket connected')
+    // })
   }
 
   public async onModuleInit() {
@@ -19,12 +23,13 @@ export class ContainersService implements OnModuleInit {
     }
   }
 
-  public async search(options?: ContainerListOptions): Promise<ContainerInfo[]> {
+  public async search(options?: ContainerListOptions): Promise<[ContainerInfo[], number]> {
     this.logger.debug(['search', JSON.stringify(Object.values(arguments))].join(' '))
 
     const search$ = this.client.send<ContainerInfo[]>('docker.containers.search', { options })
 
-    return await lastValueFrom(search$)
+    const data = await lastValueFrom(search$)
+    return [data, data.length]
   }
 
   public async create(data: ContainerCreateOptions, options?: ContainerInspectOptions): Promise<ContainerInspectInfo> {

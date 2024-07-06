@@ -44,7 +44,7 @@ import { APP_FILTER } from '@nestjs/core'
 
     }),
     DockerModule.register(),
-    SocketModule,
+    // SocketModule,
   ],
   controllers: [AppController],
   providers: [

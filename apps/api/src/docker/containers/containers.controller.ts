@@ -8,9 +8,14 @@ export class ContainersController {
 
   @Get()
   public async search(@Res() res: Response) {
+    const [data, total] = await this.service.search({
+      all: true,
+    })
+
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
-      data: await this.service.search(),
+      data,
+      total,
     })
   }
 
