@@ -10,14 +10,19 @@ q-drawer.q-py-md.q-pl-md(
       q-card.bg-primary.q-mb-md(flat)
         q-toolbar.q-px-none
           q-btn.rounded-borders(icon="mdi-docker" color="white" flat stretch)
-      q-card.bg-primary.full-height.overflow-y-auto(flat)
-        q-list
-          q-item.rounded-borders(v-for="item in list" clickable :to="item.to" :key="item.name" active-class="text-orange")
+      q-card.bg-primary.full-height.overflow-y-auto.flex.column(flat style='flex-flow: column;')
+        q-list(dark)
+          q-item.rounded-borders(v-for="item in list" clickable v-ripple :to="item.to" :key="item.name" active-class="text-orange")
             q-item-section(avatar)
               q-icon(:name="item.icon || 'mdi-square-rounded'")
             q-tooltip.text-body2(anchor="center left" self="center right") {{ item.name }}
         q-space
-        q-list
+        q-separator.mobile-only
+        q-list(dark)
+          q-item.rounded-borders(v-for="item in list2" clickable v-ripple :to="item.to" :key="item.name" active-class="text-orange")
+            q-item-section(avatar)
+              q-icon(:name="item.icon || 'mdi-square-rounded'")
+            q-tooltip.text-body2(anchor="center left" self="center right") {{ item.name }}
 </template>
 
 <script lang="ts" setup>
@@ -55,6 +60,14 @@ const list = ref([
     name: 'Volumes',
     icon: 'mdi-database-outline',
     to: '/volumes',
+  },
+])
+
+const list2 = ref([
+  {
+    name: 'Settings',
+    icon: 'mdi-cog',
+    to: '/settings',
   },
 ])
 </script>

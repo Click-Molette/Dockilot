@@ -24,7 +24,13 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'dayjs-nuxt',
     '@nuxt/devtools',
+    'nuxt-socket-io',
   ],
+  appConfig: {
+    api: {
+      url: DOCKILOT_API_URL,
+    },
+  },
   http: {
     debug: process.env.NODE_ENV === 'development',
     browserBaseURL: DOCKILOT_API_URL,
@@ -52,6 +58,18 @@ export default defineNuxtConfig({
         warning: '#f2c037',
       },
     },
+    plugins: ['Dialog', 'Loading', 'Notify'],
+  },
+  io: {
+    sockets: [
+      // {
+      //   name: 'home',
+      //   url: `${DOCKILOT_API_URL}/console`,
+      //   default: true,
+      //   vuex: { /* see section below */ },
+      //   namespaces: { /* see section below */ }
+      // },
+    ]
   },
   vite: {
     define: {

@@ -1,2 +1,45 @@
+@import "quasar/src/css/variables.sass"
+
 .rounded-borders
   border-radius: 4px !important
+
+.q-custom-mhinherit
+  min-height: inherit
+
+.q-custom-sticky-last-column-table
+  thead
+    tr:last-child th:last-child
+      background-color: $tooltip-color
+  td:last-child
+    background-color: $tooltip-color
+  th:last-child,
+  td:last-child
+    position: sticky
+    right: -1px
+    z-index: 1
+
+body.body--dark
+  .q-editor__content
+    color: $dark
+    background-color: $tooltip-color
+  .q-custom-sticky-last-column-table
+    thead
+      tr:last-child th:last-child
+        background-color: $dark
+    td:last-child
+      background-color: $dark
+
+.q-custom-table-td-highlight
+  color: $primary
+  font-weight: bold
+
+.q-custom-splitter
+  .q-splitter__before,
+  .q-splitter__after
+    height: 100%
+    min-height: inherit
+
+body.mobile
+  .q-custom-splitter
+    .q-splitter__separator
+      display: none
