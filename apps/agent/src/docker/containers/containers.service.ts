@@ -1,5 +1,5 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { InjectDockerode } from "@the-software-compagny/nestjs_module_dockerode"
+import { Injectable, Logger } from '@nestjs/common'
+import { InjectDockerode } from '@the-software-compagny/nestjs_module_dockerode'
 import { ContainerUpdateOptions } from '@the-software-compagny/dockilot_shared-types'
 import Dockerode, {
   ContainerCreateOptions,
@@ -12,42 +12,34 @@ import Dockerode, {
   ContainerStats,
   ContainerStopOptions,
   PruneContainersInfo,
-} from "dockerode"
+} from 'dockerode'
 
 @Injectable()
-export class ContainersService implements OnModuleInit {
+export class ContainersService {
   private readonly logger = new Logger(ContainersService.name)
 
   public constructor(@InjectDockerode() private readonly dockerode: Dockerode) {
   }
 
-  public async onModuleInit(): Promise<void> {
-    const events = await this.dockerode.getEvents()
-
-    events.on('data', async (data) => {
-      // const event = JSON.parse(data.toString())
-
-      // console.log('event', event)
-
-      try {
-        // const container = await this.dockerode.getContainer(event.id).inspect()
-        // console.log('container', container)
-        // this.socket.server.emit('container', JSON.stringify({
-        //   event,
-        //   container,
-        // }))
-      } catch (error) {
-        console.error(error)
-      }
-    })
-  }
-
+  /**
+   * Search containers with options
+   *
+   * @param options ContainerListOptions
+   * @returns ContainerInfo[]
+   */
   public async search(options?: ContainerListOptions): Promise<ContainerInfo[]> {
     this.logger.debug(['search', JSON.stringify(Object.values(arguments))].join(' '))
 
     return await this.dockerode.listContainers(options)
   }
 
+  /**
+   * Create container with data and options
+   *
+   * @param data ContainerCreateOptions
+   * @param options ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async create(data: ContainerCreateOptions, options?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['create', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -56,12 +48,27 @@ export class ContainersService implements OnModuleInit {
     return container.inspect(options)
   }
 
+  /**
+   * Read container data by id with options
+   *
+   * @param id string
+   * @param options ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async read(id: string, options?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['read', JSON.stringify(Object.values(arguments))].join(' '))
 
     return this.dockerode.getContainer(id).inspect(options)
   }
 
+  /**
+   * Update container data by id with options
+   *
+   * @param id string
+   * @param data ContainerUpdateOptions
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async update(id: string, data?: ContainerUpdateOptions, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['update', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -71,6 +78,14 @@ export class ContainersService implements OnModuleInit {
     return container.inspect(inspectOptions)
   }
 
+  /**
+   * Delete container by id with options
+   *
+   * @param id string
+   * @param removeOptions ContainerRemoveOptions
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async delete(id: string, removeOptions?: ContainerRemoveOptions, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['delete', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -81,6 +96,14 @@ export class ContainersService implements OnModuleInit {
     return inspect
   }
 
+  /**
+   * Start container by id with options
+   *
+   * @param id string
+   * @param startOptions ContainerStartOptions
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async start(id: string, startOptions?: ContainerStartOptions, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['start', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -90,6 +113,31 @@ export class ContainersService implements OnModuleInit {
     return container.inspect(inspectOptions)
   }
 
+  /**
+   * Restart container by id with options
+   *
+   * @param id string
+   * @param restartOptions object
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
+  public async restart(id: string, restartOptions?: {}, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
+    this.logger.debug(['restart', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const container = this.dockerode.getContainer(id)
+    await container.restart(restartOptions)
+
+    return container.inspect(inspectOptions)
+  }
+
+  /**
+   * Stop container by id with options
+   *
+   * @param id string
+   * @param stopOptions ContainerStopOptions
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async stop(id: string, stopOptions?: ContainerStopOptions, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['stop', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -99,6 +147,14 @@ export class ContainersService implements OnModuleInit {
     return container.inspect(inspectOptions)
   }
 
+  /**
+   * Pause container by id with options
+   *
+   * @param id string
+   * @param pauseOptions object
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async pause(id: string, pauseOptions?: {}, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['pause', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -108,6 +164,14 @@ export class ContainersService implements OnModuleInit {
     return container.inspect(inspectOptions)
   }
 
+  /**
+   * Unpause container by id with options
+   *
+   * @param id string
+   * @param unpauseOptions object
+   * @param inspectOptions ContainerInspectOptions
+   * @returns ContainerInspectInfo
+   */
   public async unpause(id: string, unpauseOptions?: {}, inspectOptions?: ContainerInspectOptions): Promise<ContainerInspectInfo> {
     this.logger.debug(['unpause', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -117,6 +181,13 @@ export class ContainersService implements OnModuleInit {
     return container.inspect(inspectOptions)
   }
 
+  /**
+   * Stop all containers with options
+   *
+   * @param listOptions ContainerListOptions
+   * @param stopOptions ContainerStopOptions
+   * @returns ContainerInspectInfo[]
+   */
   public async stopAll(listOptions?: ContainerListOptions, stopOptions?: ContainerStopOptions): Promise<ContainerInspectInfo[]> {
     this.logger.debug(['stopAll', JSON.stringify(Object.values(arguments))].join(' '))
 
@@ -130,12 +201,24 @@ export class ContainersService implements OnModuleInit {
     return await Promise.all(stops)
   }
 
+  /**
+   * Prune containers with options
+   *
+   * @param options object
+   * @returns PruneContainersInfo
+   */
   public async prune(options?: {}): Promise<PruneContainersInfo> {
     this.logger.debug(['prune', JSON.stringify(Object.values(arguments))].join(' '))
 
     return await this.dockerode.pruneContainers(options)
   }
 
+  /**
+   * Get container stats by id
+   *
+   * @param id string
+   * @returns ContainerStats
+   */
   public async stats(id: string): Promise<ContainerStats> {
     this.logger.debug(['stats', JSON.stringify(Object.values(arguments))].join(' '))
 

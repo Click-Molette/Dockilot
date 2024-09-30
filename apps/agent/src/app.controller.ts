@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common'
-import { MessagePattern } from '@nestjs/microservices'
+import { ClientProxy, ClientProxyFactory, MessagePattern, Transport } from '@nestjs/microservices'
 import { AppService } from './app.service'
 import { PackageJson } from 'types-package-json'
 

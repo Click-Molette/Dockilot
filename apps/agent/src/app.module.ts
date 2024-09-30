@@ -1,37 +1,27 @@
 
 import { Module } from '@nestjs/common'
-import { AppService } from './app.service'
-import { ConfigModule } from '@nestjs/config'
-import config from './config'
-import { readFileSync } from 'node:fs'
-import { DockerodeModule } from '@the-software-compagny/nestjs_module_dockerode'
-import { AppController } from './app.controller'
-import { DockerModule } from './docker/docker.module'
-import { AllExceptionsFilter } from './_common/_filters/all-exceptions.filter'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { APP_FILTER } from '@nestjs/core'
 import { ScheduleModule } from '@nestjs/schedule'
+import { DockerodeModule, DockerodeModuleOptions } from '@the-software-compagny/nestjs_module_dockerode'
+import { AllExceptionsFilter } from './_common/_filters/all-exceptions.filter'
+import { AppController } from './app.controller'
+import { AppService } from './app.service'
+import config, { validationSchema } from './config'
+import { DockerModule } from './docker/docker.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
+      validationSchema,
     }),
-    DockerodeModule.forRoot({
-      config: {
-        protocol: 'ssh',
-        host: '192.168.1.34',
-        port: 22,
-        username: 'root',
-        sshOptions: {
-          host: '192.168.1.34',
-          port: 22,
-          username: 'root',
-          // password: 'google',
-          // password: 'google',
-          privateKey: readFileSync('c:/Users/tacxtv/.ssh/id_ed25519'),
-          // debug: (data) => console.log(data.toString()),
-        },
+    DockerodeModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        return configService.get<DockerodeModuleOptions>('dockerode')
       },
     }),
     ScheduleModule.forRoot(),
@@ -43,7 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
-    }
+    },
   ],
 })
 export class AppModule {
