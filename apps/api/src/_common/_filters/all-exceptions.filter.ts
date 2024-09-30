@@ -7,7 +7,13 @@ const GENERIC_ERROR_MESSAGE = 'Unexpected error occurred'
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name)
 
-  catch(exception: any, host: ArgumentsHost) {
+  /**
+   * Catch all exceptions and log them
+   *
+   * @param exception any
+   * @param host ArgumentsHost
+   */
+  public catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()
     const statusCode = exception?.statusCode || exception?.error?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR

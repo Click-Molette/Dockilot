@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from '@nestjs/swagger'
 import { Response } from 'express'
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
 import { SwaggerTheme, SwaggerThemeNameEnum } from 'swagger-themes'
 
 export default function swagger(app: NestExpressApplication): void {
