@@ -1,7 +1,4 @@
-interface ThrottleDevice {
-  Path: string
-  Rate: number
-}
+import { ThrottleDevice } from './throttle-device'
 
 export interface ContainerUpdateOptions {
   CpuShares: number
