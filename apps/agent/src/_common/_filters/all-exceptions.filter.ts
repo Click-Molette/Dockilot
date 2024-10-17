@@ -9,6 +9,7 @@ export class AllExceptionsFilter implements RpcExceptionFilter<RpcException> {
   private readonly logger = new Logger(AllExceptionsFilter.name)
 
   public catch(exception: any, host: ArgumentsHost): Observable<any> {
+    console.log('exception', exception)
     const ctx = host.switchToRpc()
     const data = ctx.getData()
     const statusCode = exception?.statusCode || exception?.error?.statusCode || HttpStatus.INTERNAL_SERVER_ERROR

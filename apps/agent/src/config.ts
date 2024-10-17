@@ -6,6 +6,8 @@ import chalk from 'chalk'
 import Joi from 'joi'
 import { existsSync, readFileSync } from 'node:fs'
 import { getLogLevel } from './_common/_functions/get-log-level'
+import { LocalFileSystemStorageConfig, StorageManagerConfig } from '@the-software-compagny/nestjs_module_factorydrive'
+import { SFTPStorageConfig } from '@the-software-compagny/nestjs_module_factorydrive-sftp'
 
 export const validationSchema = Joi.object({
   DOCKILOT_AGENT_LOG_LEVEL: Joi
@@ -39,6 +41,18 @@ export const validationSchema = Joi.object({
     .port()
     .default(2375),
   DOCKILOT_AGENT_DOCKERODE_USERNAME: Joi.optional(),
+
+  DOCKILOT_AGENT_STORAGE_DRIVER: Joi
+    .valid('sftp', 'local')
+    .optional(),
+  DOCKILOT_AGENT_STORAGE_STACKS_ROOT: Joi
+    .string()
+    .pattern(new RegExp('^(/[^/ ]*)+/?$'))
+    .required(),
+  DOCKILOT_AGENT_STORAGE_VOLUMES_ROOT: Joi
+    .string()
+    .pattern(new RegExp('^(/[^/ ]*)+/?$'))
+    .optional(),
 })
 
 export interface ConfigInstance {
@@ -46,6 +60,18 @@ export interface ConfigInstance {
     transport: Transport,
   },
   dockerode: DockerodeModuleOptions,
+  factorydrive: {
+    options:
+    | StorageManagerConfig
+    | {
+      disks: {
+        [key: string]: {
+          driver: 'sftp' | 'local',
+          config: SFTPStorageConfig | LocalFileSystemStorageConfig,
+        },
+      },
+    },
+  },
 }
 
 export async function initializeConfig(): Promise<ConfigInstance> {
@@ -95,6 +121,21 @@ const config = async (): Promise<ConfigInstance> => {
     }
   }
 
+  const factoryDriveDiskConfig = {}
+  let factoryDriveDriver = process.env['DOCKILOT_AGENT_STORAGE_DRIVER']
+
+  if (!factoryDriveDriver) {
+    if (process.env['DOCKILOT_AGENT_DOCKERODE_PROTOCOL'] === 'ssh') {
+      factoryDriveDriver = 'sftp'
+    } else {
+      factoryDriveDriver = 'local'
+    }
+  }
+
+  if (factoryDriveDriver === 'sftp') {
+    factoryDriveDiskConfig['options'] = dockerodeOptions?.['sshOptions']
+  }
+
   return {
     application: {
       logger: getLogLevel(process.env['DOCKILOT_AGENT_LOG_LEVEL']),
@@ -117,6 +158,27 @@ const config = async (): Promise<ConfigInstance> => {
         sshOptions: {
           ...dockerodeOptions?.['sshOptions'],
           debug: (data) => Logger.verbose(data.toString(), `${chalk.bold.cyan('DockerodeSSH')}\x1b[33m`),
+        },
+      },
+    },
+    factorydrive: {
+      options: {
+        disks: {
+          stacks: {
+            driver: factoryDriveDriver,
+            config: <LocalFileSystemStorageConfig | SFTPStorageConfig>{
+              root: process.env['DOCKILOT_AGENT_STORAGE_STACKS_ROOT'],
+              options: dockerodeOptions?.['sshOptions'],
+              ...factoryDriveDiskConfig,
+            },
+          },
+          volumes: {
+            driver: factoryDriveDriver,
+            config: <LocalFileSystemStorageConfig | SFTPStorageConfig>{
+              root: process.env['DOCKILOT_AGENT_STORAGE_VOLUMES_ROOT'] || process.env['DOCKILOT_AGENT_STORAGE_STACKS_ROOT'],
+              ...factoryDriveDiskConfig,
+            },
+          },
         },
       },
     },

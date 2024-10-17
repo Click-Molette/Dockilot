@@ -35,4 +35,36 @@ export class StacksService implements OnModuleInit {
 
     return await lastValueFrom(observableTimeoutCatch(read$))
   }
+
+  public async pull(name: string, options?: {}): Promise<any> {
+    this.logger.debug(['pull', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const pull$ = this._client.send<any>(EventPatterns.STACKS_PULL, { name, options })
+
+    return await lastValueFrom(observableTimeoutCatch(pull$))
+  }
+
+  public async up(name: string, options?: {}): Promise<any> {
+    this.logger.debug(['up', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const up$ = this._client.send<any>(EventPatterns.STACKS_UP, { name, options })
+
+    return await lastValueFrom(observableTimeoutCatch(up$))
+  }
+
+  public async down(name: string, options?: {}): Promise<any> {
+    this.logger.debug(['down', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const down$ = this._client.send<any>(EventPatterns.STACKS_DOWN, { name, options })
+
+    return await lastValueFrom(observableTimeoutCatch(down$))
+  }
+
+  public async ps(name: string, options?: {}): Promise<any> {
+    this.logger.debug(['ps', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const ps$ = this._client.send<any>(EventPatterns.STACKS_PS, { name, options })
+
+    return await lastValueFrom(observableTimeoutCatch(ps$))
+  }
 }

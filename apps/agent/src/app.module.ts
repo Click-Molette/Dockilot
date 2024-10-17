@@ -9,6 +9,8 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import config, { validationSchema } from './config'
 import { DockerModule } from './docker/docker.module'
+import { FactorydriveModule, FactorydriveService } from '@the-software-compagny/nestjs_module_factorydrive'
+import { SFTPStorage } from '@the-software-compagny/nestjs_module_factorydrive-sftp'
 
 @Module({
   imports: [
@@ -24,6 +26,13 @@ import { DockerModule } from './docker/docker.module'
         return configService.get<DockerodeModuleOptions>('dockerode')
       },
     }),
+    FactorydriveModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        ...configService.get('factorydrive.options'),
+      }),
+    }),
     ScheduleModule.forRoot(),
     DockerModule,
   ],
@@ -37,4 +46,7 @@ import { DockerModule } from './docker/docker.module'
   ],
 })
 export class AppModule {
+  public constructor(storage: FactorydriveService) {
+    storage.registerDriver('sftp', SFTPStorage)
+  }
 }

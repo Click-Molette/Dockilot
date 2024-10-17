@@ -44,4 +44,48 @@ export class StacksController {
       data: await this._service.read(name),
     })
   }
+
+  @Get(':name/pull')
+  public async pull(
+    @Res() res: Response,
+    @Param('name') name: string,
+  ): Promise<Response> {
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: await this._service.pull(name),
+    })
+  }
+
+  @Get(':name/up')
+  public async up(
+    @Res() res: Response,
+    @Param('name') name: string,
+  ): Promise<Response> {
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: await this._service.up(name),
+    })
+  }
+
+  @Get(':name/down')
+  public async down(
+    @Res() res: Response,
+    @Param('name') name: string,
+  ): Promise<Response> {
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: await this._service.down(name),
+    })
+  }
+
+  @Get(':name/ps')
+  public async ps(
+    @Res() res: Response,
+    @Param('name') name: string,
+  ): Promise<Response> {
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: await this._service.ps(name),
+    })
+  }
 }

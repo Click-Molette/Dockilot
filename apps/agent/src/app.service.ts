@@ -17,7 +17,7 @@ export class AppService implements OnApplicationBootstrap {
     }
   }
 
-  public onApplicationBootstrap() {
+  public async onApplicationBootstrap() {
     this.logger.log(chalk.bold.blue(`Dockilot Agent now listening with version <${this.package.version}> 🕹️`))
   }
 

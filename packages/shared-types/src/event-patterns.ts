@@ -32,4 +32,5 @@ export namespace EventPatterns {
   export const STACKS_PULL = 'docker.stacks.pull'
   export const STACKS_DOWN = 'docker.stacks.down'
   export const STACKS_UP = 'docker.stacks.up'
+  export const STACKS_PS = 'docker.stacks.ps'
 }

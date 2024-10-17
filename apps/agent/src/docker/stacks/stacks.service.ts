@@ -1,15 +1,33 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { RpcException } from '@nestjs/microservices'
 import { InjectDockerode } from '@the-software-compagny/nestjs_module_dockerode'
+import { AbstractStorage, FactorydriveService } from '@the-software-compagny/nestjs_module_factorydrive'
 import Dockerode from 'dockerode'
-import { readFileSync } from 'fs'
+import Compose from 'dockerode-compose'
 import { parse } from 'yaml'
+import { ComposeService } from './_services/compose.service'
 
 @Injectable()
 export class StacksService {
   private readonly logger = new Logger(StacksService.name)
+  private readonly stackStorage: AbstractStorage
+  private readonly rootStacksPath: string
 
-  public constructor(@InjectDockerode() private readonly dockerode: Dockerode) {
+  public constructor(
+    @InjectDockerode() private readonly dockerode: Dockerode,
+    private readonly storage: FactorydriveService,
+    private readonly config: ConfigService,
+    private readonly compose: ComposeService,
+  ) {
+    this.stackStorage = this.storage.getDisk('stacks')
+    this.rootStacksPath = this.config.get<string>('factorydrive.options.disks.stacks.config.root')
+
+    if (!this.rootStacksPath) {
+      throw new Error('Missing rootStacksPath in config')
+    }
+
+    this.logger.log('StacksService initialized 🚀')
   }
 
   public async search(options: { filters?: { [key: string]: string[] } }): Promise<any> {
@@ -52,52 +70,26 @@ export class StacksService {
   public async read(name: string, options?: {}): Promise<any> {
     this.logger.debug(['read', JSON.stringify(Object.values(arguments))].join(' '))
 
+    const stack = await this.compose.read(name, options)
 
-    const containers = await this.dockerode.listContainers({
-      all: true,
-      filters: {
-        label: ['com.docker.compose.project=' + name],
-      },
-    })
-
-    if (containers.length === 0) {
-      throw new RpcException(`Stack ${name} not found`)
-    }
-
-    const config_files = containers[0].Labels['com.docker.compose.project.config_files']
-    const working_dir = containers[0].Labels['com.docker.compose.project.working_dir']
-
-    // const config_filesData = readFileSync(config_files, 'utf8')
-    // const stack = parse(config_filesData)
-
-    //TODO: read file from ssh if agent is not on the same host as the stack
-
-    return {
-      name,
-      project: {
-        config_files,
-        working_dir,
-      },
-      // stack,
-      containers: containers.map((container) => ({
-        Names: container.Names,
-        State: container.State,
-      })),
-    }
+    return stack
   }
 
-  public async pull(options: {}): Promise<any> {
-    this.logger.debug(['pull', JSON.stringify(Object.values(arguments))].join(' '))
+  public async ps(name: string, options?: {}): Promise<any> {
+    this.logger.debug(['ps', JSON.stringify(Object.values(arguments))].join(' '))
 
+    return await this.compose.ps(name, options)
   }
 
-  public async down(options: {}): Promise<any> {
+  public async down(name: string, options?: {}): Promise<any> {
     this.logger.debug(['down', JSON.stringify(Object.values(arguments))].join(' '))
 
+    return await this.compose.down(name, options)
   }
 
-  public async up(options: {}): Promise<any> {
+  public async up(name: string, options?: {}): Promise<any> {
     this.logger.debug(['up', JSON.stringify(Object.values(arguments))].join(' '))
 
+    return await this.compose.up(name, options)
   }
 }

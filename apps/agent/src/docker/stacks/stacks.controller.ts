@@ -24,22 +24,29 @@ export class StacksController {
 
   @MessagePattern(EventPatterns.STACKS_PULL)
   public async pull(
-    @Payload() payload: { options?: {} },
+    @Payload() payload: { name: string, options?: {} },
   ): Promise<any> {
-    return this.service.pull(payload?.options)
+    return this.service.pull(payload.name, payload?.options)
   }
 
   @MessagePattern(EventPatterns.STACKS_DOWN)
   public async down(
-    @Payload() payload: { options?: {} },
+    @Payload() payload: { name: string, options?: {} },
   ): Promise<any> {
-    return this.service.down(payload?.options)
+    return this.service.down(payload.name, payload?.options)
   }
 
   @MessagePattern(EventPatterns.STACKS_UP)
   public async up(
-    @Payload() payload: { options?: {} },
+    @Payload() payload: { name: string, options?: {} },
   ): Promise<any> {
-    return this.service.up(payload?.options)
+    return this.service.up(payload.name, payload?.options)
+  }
+
+  @MessagePattern(EventPatterns.STACKS_PS)
+  public async ps(
+    @Payload() payload: { name: string, options?: {} },
+  ): Promise<any> {
+    return this.service.ps(payload.name, payload?.options)
   }
 }
