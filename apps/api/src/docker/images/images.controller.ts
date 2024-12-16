@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpStatus, ParseIntPipe, Query, Res } from '@nestjs/common'
+import { Controller, DefaultValuePipe, Get, HttpStatus, Param, ParseIntPipe, Query, Res } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import { ImagesService } from './images.service'
 import { Response } from 'express'
@@ -31,6 +31,7 @@ export class ImagesController {
     const [data, total] = await this._service.list({
       filters,
     })
+
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: data.slice((page - 1) * limit, page * limit),
@@ -61,30 +62,16 @@ export class ImagesController {
   }
 
   /**
-   * Prune images with options
-   *
-   * @param res Response
-   * @returns Response
-   */
-  @Get('prune')
-  public async prune(@Res() res: Response): Promise<Response> {
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      data: await this._service.prune(),
-    })
-  }
-
-  /**
    * Inspect image by imageTag
    *
    * @param res Response
    * @param imageTag string
    * @returns Response
    */
-  @Get('inspect')
+  @Get('inspect/:imageTag')
   public async inspect(
     @Res() res: Response,
-    @Query('imageTag') imageTag: string,
+    @Param('imageTag') imageTag: string,
   ): Promise<Response> {
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
@@ -99,10 +86,10 @@ export class ImagesController {
    * @param imageTag string
    * @returns Response
    */
-  @Get('remove')
+  @Get('remove/:imageTag')
   public async remove(
     @Res() res: Response,
-    @Query('imageTag') imageTag: string,
+    @Param('imageTag') imageTag: string,
   ): Promise<Response> {
     await this._service.remove(imageTag)
 
@@ -119,14 +106,28 @@ export class ImagesController {
    * @param imageTag string
    * @returns Response
    */
-  @Get('history')
+  @Get('history/:imageTag')
   public async history(
     @Res() res: Response,
-    @Query('imageTag') imageTag: string,
+    @Param('imageTag') imageTag: string,
   ): Promise<Response> {
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
       data: await this._service.history(imageTag),
+    })
+  }
+
+  /**
+   * Prune images with options
+   *
+   * @param res Response
+   * @returns Response
+   */
+  @Get('prune')
+  public async prune(@Res() res: Response): Promise<Response> {
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: await this._service.prune(),
     })
   }
 }

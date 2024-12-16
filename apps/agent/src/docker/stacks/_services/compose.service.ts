@@ -140,13 +140,42 @@ export class ComposeService implements OnModuleInit {
     return null
   }
 
+  public async pull(
+    composeFile: string,
+    options?: {
+    },
+  ): Promise<any> {
+    this.logger.verbose(['pull', JSON.stringify(Object.values(arguments))].join(' '))
+
+    const composePath = await this._composeNameToPath(composeFile)
+    const rawData = await this._exec(`docker`, ['compose', '-f', posix.basename(composePath), 'pull', options], {
+      cwd: posix.dirname(composePath),
+    })
+
+    console.log(rawData)
+
+    for (const line of rawData.stdout.split('\n')) {
+      console.log(line)
+    }
+
+    return null
+  }
+
   public async read(composeFile: string, options?: {}): Promise<any> {
     this.logger.verbose(['read', JSON.stringify(Object.values(arguments))].join(' '))
 
     const composePath = await this._composeNameToPath(composeFile)
     const data = await this.storage.getDisk('stacks').getBuffer(composePath)
 
+    // const compose = parse(data.content.toString())
+    // const crate = compose.services.crate
+
+    // return {
+    //   crate,
+    // }
+
     return {
+      name: composePath,
       compose: parse(data.content.toString()),
       raw: data.content.toString(),
     }

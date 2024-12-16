@@ -36,19 +36,6 @@ export class ImagesController {
   }
 
   /**
-   * Prune images with options
-   *
-   * @param payload { options?: {} }
-   * @returns PruneImagesInfo
-   */
-  @MessagePattern(EventPatterns.IMAGES_PRUNE)
-  public async prune(
-    @Payload() payload: { options?: {} },
-  ): Promise<PruneImagesInfo> {
-    return this.service.prune(payload?.options)
-  }
-
-  /**
    * Inspect image by imageTag
    *
    * @param payload { imageTag: string }
@@ -85,5 +72,18 @@ export class ImagesController {
     @Payload() payload: { imageTag: string },
   ): Promise<any> {
     return this.service.history(payload.imageTag)
+  }
+
+  /**
+   * Prune images with options
+   *
+   * @param payload { options?: {} }
+   * @returns PruneImagesInfo
+   */
+  @MessagePattern(EventPatterns.IMAGES_PRUNE)
+  public async prune(
+    @Payload() payload: { options?: {} },
+  ): Promise<PruneImagesInfo> {
+    return this.service.prune(payload?.options)
   }
 }

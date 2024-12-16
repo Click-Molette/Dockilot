@@ -28,8 +28,7 @@ export class StacksController {
 
     return res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,
-      // data: data.slice((page - 1) * limit, page * limit),
-      data,
+      data: data.slice((page - 1) * limit, page * limit),
       total,
     })
   }

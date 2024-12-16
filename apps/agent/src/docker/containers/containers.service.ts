@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger, mixin, Type } from '@nestjs/common'
 import { InjectDockerode } from '@the-software-compagny/nestjs_module_dockerode'
 import { ContainerUpdateOptions } from '@the-software-compagny/dockilot_shared-types'
 import Dockerode, {

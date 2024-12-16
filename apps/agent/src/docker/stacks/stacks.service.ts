@@ -75,6 +75,12 @@ export class StacksService {
     return stack
   }
 
+  public async pull(name: string, options?: {}): Promise<any> {
+    this.logger.debug(['pull', JSON.stringify(Object.values(arguments))].join(' '))
+
+    return await this.compose.pull(name, options)
+  }
+
   public async ps(name: string, options?: {}): Promise<any> {
     this.logger.debug(['ps', JSON.stringify(Object.values(arguments))].join(' '))
 

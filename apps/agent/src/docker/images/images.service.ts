@@ -35,18 +35,6 @@ export class ImagesService {
   }
 
   /**
-   * Prune images with options
-   *
-   * @param options object
-   * @returns PruneImagesInfo
-   */
-  public async prune(options?: {}): Promise<PruneImagesInfo> {
-    this.logger.debug(['prune', JSON.stringify(Object.values(arguments))].join(' '))
-
-    return await this.dockerode.pruneImages(options)
-  }
-
-  /**
    * Inspect image by imageTag
    *
    * @param imageTag string
@@ -87,5 +75,17 @@ export class ImagesService {
     const image = await this.dockerode.getImage(imageTag)
 
     return await image.history()
+  }
+
+  /**
+   * Prune images with options
+   *
+   * @param options object
+   * @returns PruneImagesInfo
+   */
+  public async prune(options?: {}): Promise<PruneImagesInfo> {
+    this.logger.debug(['prune', JSON.stringify(Object.values(arguments))].join(' '))
+
+    return await this.dockerode.pruneImages(options)
   }
 }
