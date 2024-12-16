@@ -1,22 +1,25 @@
 <template lang="pug">
-q-page.flex.column
+q-page.grid
   q-custom-twopan.col(
-    :simple='false'
+    :simple='true'
     :loading='pending'
-    :rows='stacks.data'
-    :total='stacks.total'
+    :rows='stacks?.data || []'
+    :total='stacks?.total || 0'
     :columns='columns'
+    :refresh='refresh'
     :targetId='targetId'
+    :hideTwoPanSwitch='true'
     row-key='Name'
   )
-    template(#top-table)
-      q-card-section.q-pa-none
-        q-input(v-model='filters' label='Search' fill dense)
+    template(#before-top)
+      q-input.col(v-model='filters' label='Search' dense autofocus outlined clearable)
     template(v-slot:body-cell-state='props')
       q-td(:props='props')
         q-icon(name='mdi-layers-outline' size='sm' :color='getStackStateColor(props.row)')
     template(v-slot:row-actions='{ row }')
       q-btn(:to='toPathWithQueries(`/stacks/${row.name}`)' color='primary' icon='mdi-eye' size='md' flat round dense)
+      q-btn(:to='toPathWithQueries(`/stacks/${row.name}`, { mode: "diff" })' icon='mdi-dishwasher-off' size='sm' flat round dense)
+      q-btn(:to='toPathWithQueries(`/stacks/${row.name}`, { mode: "edit" })' icon='mdi-pencil' size='sm' flat round dense)
     template(#after-content)
       nuxt-page(ref='page')
 </template>
@@ -53,7 +56,6 @@ export default {
   async setup() {
     const page = ref<typeof Page | null>(null)
     const $route = useRoute()
-    const $appConfig = useAppConfig()
     const { getDefaults } = usePagination()
     const { toPathWithQueries } = useRouteQueries()
 
@@ -73,6 +75,7 @@ export default {
     } = await useHttp('/docker/stacks', {
       method: 'get',
       query: queryDebounced,
+      immediate: false,
     })
     if (error.value) {
       console.error(error.value)
@@ -86,6 +89,7 @@ export default {
       page,
       stacks,
       pending,
+      refresh,
       toPathWithQueries,
     }
   },

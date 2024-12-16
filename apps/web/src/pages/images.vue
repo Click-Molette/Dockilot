@@ -1,31 +1,34 @@
 <template lang="pug">
-q-page.flex.column
+q-page.grid
   q-custom-twopan.col(
     :simple='false'
     :loading='pending'
-    :rows='images.data'
-    :total='images.total'
+    :rows='images?.data || []'
+    :total='images?.total || 0'
     :columns='columns'
+    :refresh='refresh'
     :targetId='targetId'
-    :rowClassHandler='rowClassHandler'
-    row-key='RepoTags'
+    row-key='Id'
   )
-    template(#top-table)
-      q-card-section.q-pa-none
-        q-input(v-model='filters' label='Search' fill dense)
+    template(#before-top)
+      q-input.col(v-model='filters' label='Search' dense outlined clearable autofocus)
+    template(v-slot:body-cell-RepoTags='props')
+      q-td.ellipsis(:props='props' style='max-width: 50px')
+        span(v-text='getImageFirstName(props.row)')
+        q-tooltip.text-body2(:delay="500" v-text='getImageFirstName(props.row)')
     template(v-slot:row-actions='{ row }')
       q-btn(
-        v-if='getImageFirstName(row) !== null'
-        :to='toPathWithQueries(`/images/info`, row)'
-        color='primary' icon='mdi-eye' size='md'
+        :to='toPathWithQueries(`/images/${row.Id}`)'
+        color='primary' icon='mdi-eye' size='sm'
         flat round dense
       )
+      q-btn(color='gray' icon='mdi-delete' size='sm' flat round dense)
     template(#after-content)
-      nuxt-page(ref='page')
+      nuxt-page(ref='page' :getImageFirstName='getImageFirstName')
 </template>
 
 <script lang="ts">
-import Page from './images/info.vue'
+import Page from './images/[tag].vue'
 import type { QTableProps } from 'quasar'
 import type { LocationQueryValue } from 'vue-router'
 
@@ -33,6 +36,7 @@ export default {
   name: 'ImagesPage',
   data() {
     return {
+      selected: '',
       columns: [
         {
           name: 'RepoTags',
@@ -43,6 +47,15 @@ export default {
           format: (val) => `${this.getImageFirstName(val)}`,
           sortable: true,
         },
+        {
+          name: 'Size',
+          required: true,
+          align: 'left',
+          label: 'Size',
+          field: (row) => row.Size,
+          format: (val) => `${this.bytesToSize(val)}`,
+          sortable: true,
+        },
       ] as QTableProps['columns'],
     }
   },
@@ -50,26 +63,9 @@ export default {
     const page = ref<typeof Page | null>(null)
     const $route = useRoute()
     const { getDefaults } = usePagination()
+    const { bytesToSize } = useFormatters()
 
-    const getImageFirstName = (row: any): string | null => {
-      if (row.RepoTags.length > 0) {
-        return row.RepoTags[0]
-      }
-
-      if (row.RepoDigests.length > 0) {
-        const RepoDigest = row.RepoDigests[0]
-        return RepoDigest.split('@')[0]
-      }
-
-      return null
-    }
-
-    const queryHandler = (url: URL, row: any) => {
-      const imageTag = getImageFirstName(row)
-      url.searchParams.set('imageTag', imageTag)
-    }
-
-    const { toPathWithQueries } = useRouteQueries({ queryHandler })
+    const { toPathWithQueries } = useRouteQueries()
 
     const computedQuery = computed(() => {
       return {
@@ -84,9 +80,10 @@ export default {
       error,
       pending,
       refresh,
-    } = await useHttp('/docker/images/list', {
+    } = await useLazyHttp('/docker/images/list', {
       method: 'get',
       query: queryDebounced,
+      immediate: false,
     })
     if (error.value) {
       console.error(error.value)
@@ -100,27 +97,35 @@ export default {
       page,
       images,
       pending,
+      refresh,
       toPathWithQueries,
-      getImageFirstName,
+      bytesToSize,
     }
   },
   methods: {
-    rowClassHandler({ row, targetId, rowClassHighlight }) {
-      if (this.getImageFirstName(row) === targetId) {
-        return rowClassHighlight
+    getImageFirstName(row: any): string | null {
+      if (row.RepoTags.length > 0) {
+        return row.RepoTags[0]
       }
 
-      return ''
+      if (row.RepoDigests.length > 0) {
+        const RepoDigest = row.RepoDigests[0]
+
+        return RepoDigest
+      }
+
+      return row.Id
     },
   },
   computed: {
     targetId(): LocationQueryValue[] | string {
-      return this.$route.query['imageTag'] || ''
+      return this.$route.params.tag || ''
     },
     filters: {
       get(): LocationQueryValue[] | string {
         const v = this.$route.query['filters[reference]'] || ''
-        return v.replace(/^\*|\*$/g, '')
+
+        return `${v}`.replace(/^\*|\*$/g, '')
       },
       set(v: string): void {
         this.$router.replace({

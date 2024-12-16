@@ -1,25 +1,25 @@
 <template lang="pug">
-q-page.flex.column
+q-page.grid
   q-custom-twopan.col(
     :simple='false'
     :loading='pending'
-    :rows='containers.data'
-    :total='containers.total'
+    :rows='containers?.data || []'
+    :total='containers?.total || 0'
     :columns='columns'
+    :refresh='refresh'
     :targetId='targetId'
     row-key='Id'
   )
-    template(#top-table)
-      q-card-section.q-pa-none
-        q-input(v-model='filters' label='Search' fill dense)
+    template(#before-top)
+      q-input.col(v-model='filters' label='Search' dense outlined clearable autofocus)
     template(v-slot:body-cell-state='props')
       q-td(:props='props')
         q-icon(name='mdi-cube' size='sm' :color='getContainerStateColor(props.row)')
     template(v-slot:row-actions='{ row }')
       q-btn(:to='toPathWithQueries(`/containers/${row.Id}`)' color='primary' icon='mdi-eye' size='md' flat round dense)
-      q-btn(:to='toPathWithQueries(`/containers/${row.Id}/console`)' color='gray' icon='mdi-console' size='md' flat round dense)
-      q-btn(:to='toPathWithQueries(`/containers/${row.Id}/logs`)' color='gray' icon='mdi-file-outline' size='md' flat round dense)
-      q-btn(:to='toPathWithQueries(`/containers/${row.Id}/stats`)' color='gray' icon='mdi-chart-areaspline' size='md' flat round dense)
+      q-btn(:to='toPathWithQueries(`/containers/${row.Id}/console`)' color='gray' icon='mdi-console' size='sm' flat round dense)
+      q-btn(:to='toPathWithQueries(`/containers/${row.Id}/logs`)' color='gray' icon='mdi-file-outline' size='sm' flat round dense)
+      q-btn(:to='toPathWithQueries(`/containers/${row.Id}/stats`)' color='gray' icon='mdi-chart-areaspline' size='sm' flat round dense)
     template(#after-content)
       nuxt-page(ref='page')
 </template>
@@ -65,7 +65,6 @@ export default {
   async setup() {
     const page = ref<typeof Page | null>(null)
     const $route = useRoute()
-    const $appConfig = useAppConfig()
     const { getDefaults } = usePagination()
     const { toPathWithQueries } = useRouteQueries()
 
@@ -85,6 +84,7 @@ export default {
     } = await useHttp('/docker/containers', {
       method: 'get',
       query: queryDebounced,
+      immediate: false,
     })
     if (error.value) {
       console.error(error.value)
@@ -118,6 +118,7 @@ export default {
       page,
       containers,
       pending,
+      refresh,
       toPathWithQueries,
     }
   },

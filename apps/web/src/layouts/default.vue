@@ -1,5 +1,5 @@
 <template lang="pug">
-q-layout(view="lHh Lpr lff")
+q-layout(view="hHh Lpr lff")
   q-custom-layout-default-header
   q-custom-layout-default-drawer
   q-page-container.q-mx-md

@@ -1,5 +1,27 @@
 @import "quasar/src/css/variables.sass"
 
+.q-custom-mini-scrollbar::-webkit-scrollbar
+  width: 5px
+
+.q-custom-mini-scrollbar::-webkit-scrollbar-thumb
+  height: 56px
+  background-clip: content-box
+  background-color: rgba(85, 85, 85, 0.8)
+
+*::-webkit-scrollbar
+  width: 14px
+
+*::-webkit-scrollbar-track
+  border-radius: 8px
+
+*::-webkit-scrollbar-thumb
+  height: 56px
+  background-clip: content-box
+  background-color: rgba(85, 85, 85, 0.6)
+
+*::-webkit-scrollbar-thumb:hover
+  background-color: rgba(110, 110, 110, 0.6)
+
 .rounded-borders
   border-radius: 4px !important
 
@@ -28,6 +50,8 @@ body.body--dark
         background-color: $dark
     td:last-child
       background-color: $dark
+  .q-custom-border-bottom
+    border-color: $separator-dark-color
 
 .q-custom-table-td-highlight
   color: $primary
@@ -39,7 +63,26 @@ body.body--dark
     height: 100%
     min-height: inherit
 
-body.mobile
+@media (max-width: $breakpoint-sm)
   .q-custom-splitter
     .q-splitter__separator
       display: none
+
+.q-custom-no-readonly-style.q-field--filled.q-field--readonly .q-field__control:before
+  border-bottom-style: none
+
+.q-custom-chip-left
+  border-radius: $generic-border-radius 0 0 $generic-border-radius
+
+.q-custom-chip-right
+  border-radius: 0 $generic-border-radius $generic-border-radius 0
+
+.q-custom-border-bottom
+  border-bottom: 1px solid $separator-color
+
+.grid
+  display: grid
+  grid-gap: 10px
+
+.cursor-cell
+  cursor: cell !important

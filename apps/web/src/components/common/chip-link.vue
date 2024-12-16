@@ -1,6 +1,6 @@
 <template lang="pug">
 q-chip(
-  @click='clipboardImageWithTag'
+  @click='clipboardCopy(raw || text)'
   color='grey'
   clickable dense
 )
@@ -21,18 +21,13 @@ export default {
       default: '',
     },
   },
-  methods: {
-    async clipboardImageWithTag(): void {
-      const { copy } = useClipboard()
+  setup() {
+    const $q = useQuasar()
+    const { clipboardCopy } = useClipboardManager($q)
 
-      await copy(this.raw || this.text)
-
-      this.$q.notify({
-        message: 'Copied to clipboard',
-        color: 'positive',
-        icon: 'mdi-check',
-      })
-    },
+    return {
+      clipboardCopy,
+    }
   },
 }
 </script>

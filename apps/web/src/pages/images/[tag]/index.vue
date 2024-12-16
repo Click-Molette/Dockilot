@@ -36,7 +36,7 @@ section
 import { useClipboard } from '@vueuse/core'
 
 export default {
-  name: 'ImagesInfoIndexPage',
+  name: 'ImagesTagIndexPage',
   props: {
     image: Object,
   },

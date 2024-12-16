@@ -1,21 +1,27 @@
 <template lang="pug">
-q-card.flex.column(flat dark)
-  q-toolbar.bg-primary.q-pa-none(style="height:48px")
+q-card.flex.column.fit.absolute(flat)
+  q-toolbar.bg-primary.q-pa-none.text-white
     q-btn.icon(stretch icon='mdi-arrow-left' flat :to='`/containers`')
     q-separator.q-mr-sm(vertical)
     q-toolbar-title.q-pa-none.cursor-pointer(@click='$router.push(`/containers/${container.Id}`)')
       q-icon(left name='mdi-cube' :color='stateColor' size='md')
       span(v-text='container.Name')
-    div
-      q-btn.icon(flat :to='`/containers/${container.Id}/console`' icon='mdi-console' round)
-      q-btn.icon(flat :to='`/containers/${container.Id}/logs`' icon='mdi-file-document' round)
-      q-btn.icon(flat :to='`/containers/${container.Id}/stats`' icon='mdi-chart-areaspline' round)
-    q-separator.q-ml-sm(vertical)
-    //- q-btn.icon(flat @click="action" :icon='stateIcon' stretch)
+    q-tabs(:model-value='tab' v-if='!isSmall')
+      q-tab.q-px-none(@click='$router.replace(toPathWithQueries(`/containers/${container.Id}`))' name="index" icon="mdi-information")
+        q-tooltip.text-body2(:delay="200") Information
+      q-tab.q-px-none(@click='$router.replace(toPathWithQueries(`/containers/${container.Id}/console`))' name="console" icon="mdi-console")
+        q-tooltip.text-body2(:delay="200") Console
+      q-tab.q-px-none(@click='$router.replace(toPathWithQueries(`/containers/${container.Id}/logs`))' name="logs" icon="mdi-file-document")
+        q-tooltip.text-body2(:delay="200") Logs
+      q-tab.q-px-none(@click='$router.replace(toPathWithQueries(`/containers/${container.Id}/stats`))' name="stats" icon="mdi-chart-areaspline")
+        q-tooltip.text-body2(:delay="200") Stats
+    q-separator(vertical)
     q-btn-dropdown(
-      @click="action" :icon='stateIcon' :loading='pendingState'
-      split flat stretch
+      @click="action" :loading='pendingState'
+      split flat stretch padding='0' dense
     )
+      template(#label)
+        q-icon.q-px-sm(:name='stateIcon')
       q-list
         q-item(:disabled='container.State.Status === "exited"' clickable :to='`/containers/${container.Id}/stop`')
           q-item-section
@@ -57,14 +63,17 @@ q-card.flex.column(flat dark)
             q-item-label Delete
           q-item-section
             q-icon(name='mdi-delete')
-  q-card-section.col.q-pa-none
+  q-card-section.col.q-pa-none.overflow-auto
     nuxt-page(:container='container' ref='page')
 </template>
 
 <script lang="ts" setup>
+const $q = useQuasar()
 const $route = useRoute()
 const $router = useRouter()
 const $appConfig = useAppConfig()
+
+const { toPathWithQueries } = useRouteQueries()
 
 const {
   data: container,
@@ -104,6 +113,9 @@ if (error.value) {
 //   updateContainer(container)
 // })
 
+const isSmall = computed(() => {
+  return $q.screen.lt.md
+})
 const stateColor = computed(() => {
   switch (container.value.State.Status) {
     case 'running':
@@ -117,6 +129,9 @@ const stateColor = computed(() => {
   }
 })
 
+const tab = computed(() => {
+  return $route.path.split('/')[3] || 'index'
+})
 const stateIcon = computed(() => {
   switch (container.value.State.Status) {
     case 'running':

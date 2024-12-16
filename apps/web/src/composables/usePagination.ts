@@ -1,3 +1,6 @@
+import { isEqual } from "radash"
+import type { LocationQueryRaw } from "vue-router"
+
 interface Pagination {
   sortBy?: string | null
   descending?: boolean
@@ -6,59 +9,76 @@ interface Pagination {
   rowsNumber?: number
 }
 
-export function usePagination() {
+export function usePagination(options?: { name?: string }) {
+  options = {
+    name: 'global',
+    ...options,
+  }
+
+  const DEFAULT_PAGE = 1
+  const DEFAULT_ROW_PIXEL_HEIGHT = 42
+
   const $route = useRoute()
   const $router = useRouter()
 
-  const DEFAULT_PAGE = 1
-  const DEFAULT_LIMIT = 14
+  const defLimit = useState(`pagination_default_limit_${options.name!}`, () => -1)
+  const pagination = useState(`pagination_settings_${options.name!}`, () => <any>{})
 
-  const pagination = ref({
-    rowsNumber: 0,
-    page: DEFAULT_PAGE,
-    rowsPerPage: DEFAULT_LIMIT,
-    sortBy: 'id',
-    descending: true,
-  })
+  const initializePagination = async (options?: { internalInnerHeight?: number, rowPixelHeight?: number, globalOffset?: number }) => {
+    options = {
+      internalInnerHeight: window.innerHeight,
+      globalOffset: 175,
+      ...options,
+    }
 
-  const initializePagination = async (total: number = 0) => {
-    if (!pagination.value) return
+    const rowPixelHeight = options.rowPixelHeight || DEFAULT_ROW_PIXEL_HEIGHT
+    defLimit.value = Math.floor((options.internalInnerHeight! - options.globalOffset!) / rowPixelHeight)
 
-    pagination.value.rowsNumber = total
     pagination.value.page = parseInt($route.query.page as string) || DEFAULT_PAGE
-    pagination.value.rowsPerPage = parseInt($route.query.limit as string) || DEFAULT_LIMIT
+    pagination.value.rowsPerPage = parseInt($route.query.limit as string) || defLimit.value
 
     await paginationQuery()
   }
 
-  const onRequest = async (props: { pagination: Pagination, filter: any, getCellValue: any }, total: number) => {
-    if (!pagination.value) return
-
+  const onRequest = async (props: { pagination: Pagination, filter: any, getCellValue: any }) => {
     const { page, rowsPerPage } = props.pagination
 
-    pagination.value.rowsNumber = total
-    pagination.value.page = page || DEFAULT_PAGE
-    pagination.value.rowsPerPage = rowsPerPage || DEFAULT_LIMIT
-
-
+    pagination.value.page = page
+    pagination.value.rowsPerPage = rowsPerPage
 
     await paginationQuery()
   }
 
   const paginationQuery = async () => {
+    const newQuery = <LocationQueryRaw>{
+      ...$route.query,
+      page: `${pagination.value.page}`,
+      limit: `${pagination.value.rowsPerPage}`,
+    }
+
+    if (isEqual($route.query, newQuery)) {
+      return
+    }
+
     $router.replace({
-      query: {
-        ...$route.query,
-        page: pagination.value.page,
-        limit: pagination.value.rowsPerPage,
-      },
+      query: newQuery,
     })
   }
 
+  const updatePaginationData = (data: { total?: number }) => {
+    if (data?.total) pagination.value.rowsNumber = data.total
+  }
+
+  const onUpdatePagination = (data) => {
+    console.log('onUpdatePagination', data)
+    return {}
+  }
+
   const getDefaults = () => {
+    console.log('getDefaults', defLimit.value)
     return {
       page: parseInt($route.query.page as string) || DEFAULT_PAGE,
-      limit: parseInt($route.query.limit as string) || DEFAULT_LIMIT,
+      limit: parseInt($route.query.limit as string) || defLimit.value,
     }
   }
 
@@ -68,6 +88,8 @@ export function usePagination() {
     initializePagination,
     onRequest,
     paginationQuery,
+    onUpdatePagination,
+    updatePaginationData,
     getDefaults,
   }
 }
