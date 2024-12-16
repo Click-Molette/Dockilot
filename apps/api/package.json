@@ -55,7 +55,6 @@
     "radash": "^12.1.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "shared-types": "*",
     "swagger-themes": "^1.4.3",
     "types-package-json": "^2.0.39"
   },
