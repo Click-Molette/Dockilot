@@ -25,6 +25,7 @@ export default defineNuxtConfig({
     'dayjs-nuxt',
     '@nuxt/devtools',
     'nuxt-socket-io',
+    'nuxt-monaco-editor',
   ],
   appConfig: {
     api: {
@@ -69,7 +70,14 @@ export default defineNuxtConfig({
       //   vuex: { /* see section below */ },
       //   namespaces: { /* see section below */ }
       // },
-    ]
+    ],
+  },
+  monacoEditor: {
+    locale: 'en',
+    componentName: {
+      codeEditor: 'MonacoEditor',
+      diffEditor: 'MonacoDiffEditor',
+    },
   },
   vite: {
     define: {
